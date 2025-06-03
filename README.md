@@ -24,3 +24,8 @@ I bet some big company will buy it for a billion of dollars!
  - run the calculator: `cargo run`
  - have fun!
 
+## Show me!
+
+<div align="center">
+  ![demo](https://github.com/fazibear/caiculator/blob/master/demo.gif)
+</div>
