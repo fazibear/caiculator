@@ -1,0 +1,10 @@
+[package]
+name = "caiculator"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0"
+ollama-rs = "0.3.1"
+iced = {version = "0.13", features = ["tokio"]}
+tokio = {version = "1.45", features = ["full"]}
