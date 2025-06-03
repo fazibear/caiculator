@@ -13,6 +13,7 @@ To run it you need to have local ollama instance.
 
 ## Why I created it?
 Because AI is everywhere, and now I'm an AI engineer too! Right? RIGHT?
+
 I bet some big company will buy it for a billion of dollars!
 
 ## How to use it?

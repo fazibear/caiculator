@@ -1,11 +1,12 @@
-use iced::widget::{button, column, pick_list, row, text, Column};
-use iced::Task;
+use iced::widget::{column, pick_list, row, text, Button, Column, Container};
+use iced::{Alignment, Length, Task, Theme};
 use ollama_rs::generation::completion::request::GenerationRequest;
 use ollama_rs::models::ModelOptions;
 use ollama_rs::Ollama;
 
 #[derive(Default)]
 pub struct Caiculator {
+    theme: Theme,
     previous: String,
     current: String,
     models: Vec<String>,
@@ -14,7 +15,6 @@ pub struct Caiculator {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    None,
     Digit(char),
     ModelsList(Vec<String>),
     Add,
@@ -26,10 +26,11 @@ pub enum Message {
     Clear,
     Back,
     ModelSelected(String),
+    ThemeChanged(Theme),
 }
 
 impl Caiculator {
-    pub const SIZE: (f32, f32) = (500.0, 500.0);
+    pub const SIZE: (f32, f32) = (310.0, 600.0);
 
     pub fn new() -> (Self, Task<Message>) {
         (
@@ -58,74 +59,91 @@ impl Caiculator {
                 self.current = "".to_string();
             }
             Message::Result(result) => {
-                self.previous = self.current.clone();
                 self.current = result;
             }
             Message::Calculate => {
+                self.previous = self.current.clone();
+                self.current = "Thinking...".to_string();
                 return Task::perform(
-                    Self::get_result(self.current_model.clone().unwrap(), self.current.clone()),
+                    Self::get_result(self.current_model.clone().unwrap(), self.previous.clone()),
                     Message::Result,
                 );
             }
             Message::ModelSelected(mode) => {
                 self.current_model = Some(mode);
             }
-            Message::None => unreachable!(),
+            Message::ThemeChanged(theme) => {
+                self.theme = theme;
+            }
         }
         Task::none()
     }
 
     pub fn view(&self) -> Column<Message> {
         column![
-            text(&self.previous).size(20),
-            text(&self.current).size(50),
+            text(&self.previous)
+                .size(20)
+                .width(Length::Fill)
+                .align_x(Alignment::End),
+            text(&self.current)
+                .size(30)
+                .width(Length::Fill)
+                .align_x(Alignment::End),
             row![
-                button("C").on_press(Message::Clear),
-                button("X").on_press(Message::None),
-                button("<-").on_press(Message::Back),
-                button("/").on_press(Message::Div),
+                Self::button("C", Message::Clear),
+                Self::button("<-", Message::Back),
+                Self::empty(),
+                Self::button("/", Message::Div),
             ]
             .spacing(10)
             .padding(10),
             row![
-                button("7").on_press(Message::Digit('7')),
-                button("8").on_press(Message::Digit('8')),
-                button("9").on_press(Message::Digit('9')),
-                button("*").on_press(Message::Mul),
+                Self::button("7", Message::Digit('7')),
+                Self::button("8", Message::Digit('8')),
+                Self::button("9", Message::Digit('9')),
+                Self::button("*", Message::Mul),
             ]
             .spacing(10)
             .padding(10),
             row![
-                button("4").on_press(Message::Digit('4')),
-                button("5").on_press(Message::Digit('5')),
-                button("6").on_press(Message::Digit('6')),
-                button("-").on_press(Message::Sub),
+                Self::button("4", Message::Digit('4')),
+                Self::button("5", Message::Digit('5')),
+                Self::button("6", Message::Digit('6')),
+                Self::button("-", Message::Sub),
             ]
             .spacing(10)
             .padding(10),
             row![
-                button("1").on_press(Message::Digit('1')),
-                button("2").on_press(Message::Digit('2')),
-                button("3").on_press(Message::Digit('3')),
-                button("+").on_press(Message::Add),
+                Self::button("1", Message::Digit('1')),
+                Self::button("2", Message::Digit('2')),
+                Self::button("3", Message::Digit('3')),
+                Self::button("+", Message::Add),
             ]
             .spacing(10)
             .padding(10),
             row![
-                button(" ").on_press(Message::None),
-                button("0").on_press(Message::Digit('0')),
-                button(" ").on_press(Message::None),
-                button("=").on_press(Message::Calculate),
+                Self::empty(),
+                Self::button("0", Message::Digit('0')),
+                Self::empty(),
+                Self::button("=", Message::Calculate),
             ]
             .spacing(10)
             .padding(10),
+            text("select theme:").center().width(Length::Fill),
+            pick_list(Theme::ALL, Some(&self.theme), Message::ThemeChanged).width(Length::Fill),
+            text("select model:").center().width(Length::Fill),
             pick_list(
                 self.models.as_ref(),
                 self.current_model.as_ref(),
                 Message::ModelSelected
             )
+            .width(Length::Fill)
         ]
         .padding(10)
+    }
+
+    pub fn theme(&self) -> Theme {
+        self.theme.clone()
     }
 
     async fn get_models() -> Vec<String> {
@@ -154,5 +172,17 @@ impl Caiculator {
         } else {
             "Something went wrong!".to_string()
         }
+    }
+
+    pub fn button(content: &str, message: Message) -> Button<Message> {
+        Button::new(content)
+            .on_press(message)
+            .width(60)
+            .height(60)
+            .padding(10)
+    }
+
+    pub fn empty() -> Container<'static, Message> {
+        Container::new("").width(60).height(60).padding(10)
     }
 }
