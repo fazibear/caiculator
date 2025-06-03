@@ -43,7 +43,11 @@ impl Caiculator {
         match message {
             Message::ModelsList(models) => {
                 self.models = models;
-                let first: String = self.models.first().unwrap().clone();
+                let first: String = self
+                    .models
+                    .first()
+                    .expect("At least one model installed. Try: ollama pull qwen2.5-coder:0.5b")
+                    .clone();
                 self.current_model = Some(first);
             }
             Message::Digit(digit) => self.current.push(digit),
@@ -148,7 +152,10 @@ impl Caiculator {
 
     async fn get_models() -> Vec<String> {
         let ollama = Ollama::default();
-        let models = ollama.list_local_models().await.unwrap();
+        let models = ollama
+            .list_local_models()
+            .await
+            .expect("Ollama server need to be running");
         let mut result = Vec::new();
         for model in models {
             result.push(model.name);
